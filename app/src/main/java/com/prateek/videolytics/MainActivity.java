@@ -36,7 +36,6 @@ public class MainActivity extends AppCompatActivity {
         super.onStart();
 
         Button btn_camera = (Button) findViewById(R.id.button);
-        Button btn_camera2 = (Button) findViewById(R.id.btn_camera2_api);
         btn_camera.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -44,6 +43,12 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(goToCamera);
             }
         });
+
+        btn_camera.setClickable(false);
+        btn_camera.setText("OLD - Doesn't work");
+        btn_camera.setAlpha((float) 0.5);
+
+        Button btn_camera2 = (Button) findViewById(R.id.btn_camera2_api);
         btn_camera2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
