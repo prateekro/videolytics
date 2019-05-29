@@ -20,7 +20,6 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -30,9 +29,7 @@ import android.view.TextureView;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.camerakit.type.CameraFacing;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.client.http.HttpTransport;
@@ -47,20 +44,19 @@ import com.google.api.services.vision.v1.model.BatchAnnotateImagesResponse;
 import com.google.api.services.vision.v1.model.EntityAnnotation;
 import com.google.api.services.vision.v1.model.Feature;
 import com.google.api.services.vision.v1.model.Image;
+import com.prateek.videolytics.models.Responsv;
+import com.prateek.videolytics.models.ResultsItem;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.stream.BaseStream;
 
 // **********************************************
 // ******** Follow - Camera API tutorial ********
@@ -191,9 +187,37 @@ public class CameraAPIActivity extends AppCompatActivity {
                 TextView imageDetail = (TextView) findViewById(R.id.result_view);
                 imageDetail.setText("Detecting.");
 //                imageDetail.setBackgroundColor(Color.argb(1, 255, 255, 255));
+
+                //TODO - TAKE / Click photo
                 onTakePhotoButtonClicked();
+//                callForSimilarPictures("Hello");
+
+
             }
         });
+
+    }
+
+    private void callForSimilarPictures(String keyword) {
+//        keyword = "hello";
+
+        Responsv Jobject = ApiRequest.getApi(keyword);
+        if (Jobject != null){
+
+            if (Jobject.getResults().size() > 0){
+                for (ResultsItem resultx : Jobject.getResults()){
+                    Log.d(TAG, "onClick: -----------------------------------------------------");
+                    Log.d(TAG, "REGULAR onClick: "+resultx.getUrls().getRegular());
+                    Log.d(TAG, "THUMB onClick: "+resultx.getUrls().getThumb());
+                    Log.d(TAG, "onClick: -----------------------------------------------------");
+
+                }
+//                        Log.d(TAG, "RAW onClick: "+Jobject.getResults().get(0).getUrls().getRaw());
+//                        Log.d(TAG, "THUMB onClick: "+Jobject.getResults().get(0).getUrls().getThumb());
+            }
+
+        }
+
 
     }
 
@@ -478,13 +502,29 @@ public class CameraAPIActivity extends AppCompatActivity {
         }
 
         protected void onPostExecute(String result) {
+            Log.d(TAG, "VISION onPostExecute nosplit result: "+result);
             CameraAPIActivity activity = mActivityWeakReference.get();
             if (activity != null && !activity.isFinishing()) {
 //                TextView imageDetail = activity.findViewById(R.id.image_details);
 //                imageDetail.setText(result);
                 TextView imageDetail = activity.findViewById(R.id.result_view);
+//                result = result.subSequence(21,result.length()).toString();
                 result = result.subSequence(21,result.length()).toString();
                 imageDetail.setText(result);
+
+                String[] lines = result.split("[\\r\\n]+");
+                int count = 0, keyXcount = 0;
+                for (String line : lines){
+                    count += 1;
+                    imageDetail.setText(imageDetail.getText().toString()+"\n"+count+"> "+ line);
+                    if (line.split(":").length > 1){
+                        keyXcount += 1;
+                        if (keyXcount == 1){
+                            imageDetail.setText(imageDetail.getText().toString()+"\n -- \n"+keyXcount+">> "+line.split(":")[1]+"\n -- \n");
+                        }
+                    }
+                }
+
                 imageDetail.setBackgroundColor(Color.parseColor("#000000"));
                 Log.d(TAG, "onPostExecute: result::"+result);
             }
